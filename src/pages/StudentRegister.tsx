@@ -51,18 +51,12 @@ const StudentRegister: React.FC = () => {
   const [error, setError] = useState('');
 
   const departments = [
-    'Computer Science',
-    'Electrical Engineering',
-    'Mechanical Engineering',
-    'Civil Engineering',
-    'Information Technology',
-    'Electronics',
-    'Chemical Engineering',
-    'Biotechnology',
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Other',
+    'CSE',
+    'CSE (DATA SCIENCE)',
+    'CSE (AI ML)',
+    'CYBERSECURITY',
+    'INFORMATION TECHNOLOGY',
+    'ECE',
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -124,10 +118,11 @@ const StudentRegister: React.FC = () => {
       setError('Roll number must be in format A followed by 11 digits');
       return false;
     }
-    // ANITS email format: firstname.lastname.dept@anits.edu.in
-    const anitsEmailRegex = /^[a-zA-Z]+\.[a-zA-Z]+\.(csd|cse|ece|eee|mech|civil|it|chem|bio)@anits\.edu\.in$/i;
+    // ANITS email format: fullname.batchyear.dept@anits.edu.in
+    // Only allow CSE, CSD (Data Science), AIM (AI ML), CSC (Cybersecurity), IT, ECE
+    const anitsEmailRegex = /^[a-zA-Z]+\.[0-9]{2}\.(cse|csd|aim|csc|it|ece)@anits\.edu\.in$/i;
     if (!formData.email || !anitsEmailRegex.test(formData.email)) {
-      setError('Please use a valid ANITS email (format: firstname.lastname.dept@anits.edu.in)');
+      setError('Invalid email format! Use: firstname.YY.dept@anits.edu.in (dept: cse/csd/aim/csc/it/ece). Example: john.22.cse@anits.edu.in');
       return false;
     }
     
@@ -172,7 +167,12 @@ const StudentRegister: React.FC = () => {
 
       navigate('/home');
     } catch (err) {
-      setError('Registration failed. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Registration failed';
+      if (errorMessage.includes('email')) {
+        setError('Email error: Use format firstname.YY.dept@anits.edu.in (dept: cse/csd/aim/csc/it/ece)');
+      } else {
+        setError(errorMessage || 'Registration failed. Please check all fields and try again.');
+      }
     }
   };
 
@@ -303,10 +303,11 @@ const StudentRegister: React.FC = () => {
                       fullWidth
                       label="Email *"
                       type="email"
-                      placeholder="john.doe.csd@anits.edu.in"
+                      placeholder="john.22.cse@anits.edu.in"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      helperText="Format: firstname.lastname.dept@anits.edu.in"
+                      helperText="Format: firstname.YY.dept@anits.edu.in | Allowed: cse, csd, aim, csc, it, ece"
+                      error={formData.email !== '' && !/^[a-zA-Z]+\.[0-9]{2}\.(cse|csd|aim|csc|it|ece)@anits\.edu\.in$/i.test(formData.email)}
                     />
                     <TextField
                       fullWidth

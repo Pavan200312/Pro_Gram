@@ -4,6 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useEffect } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
 import { initializePostLifecycle } from './services/postLifecycleService';
+import { storageSecurityMonitor } from './services/storageSecurityMonitor';
 import unitedTheme from './theme/unitedTheme';
 import PrivateRoute from './components/Layout/PrivateRoute';
 import MainLayout from './components/Layout/MainLayout';
@@ -44,9 +45,13 @@ import RecommendedCandidatesPage from './pages/RecommendedCandidatesPage';
 import CandidateProfilePage from './pages/CandidateProfilePage';
 
 function App() {
-  // Initialize post lifecycle management
+  // Initialize post lifecycle management and security monitoring
   useEffect(() => {
     const cleanup = initializePostLifecycle();
+    
+    // Initialize security monitoring
+    storageSecurityMonitor.getSecurityStatus();
+    
     return cleanup;
   }, []);
 

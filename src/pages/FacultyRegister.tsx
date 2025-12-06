@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { ThemeProvider } from '@mui/material/styles';
 import { useAuth } from '../contexts/AuthContext';
-import { AVAILABLE_SKILLS } from '../types';
+import { AVAILABLE_SKILLS, FACULTY_DESIGNATIONS } from '../types';
 import unitedTheme from '../theme/unitedTheme';
 
 const FacultyRegister: React.FC = () => {
@@ -52,17 +52,6 @@ const FacultyRegister: React.FC = () => {
   const [profilePicture, setProfilePicture] = useState<string>('');
   const [resume, setResume] = useState<File | null>(null);
   const [error, setError] = useState('');
-
-  const designations = [
-    'Professor',
-    'Associate Professor',
-    'Assistant Professor',
-    'Lecturer',
-    'Senior Lecturer',
-    'Research Fellow',
-    'Visiting Faculty',
-    'Adjunct Professor',
-  ];
 
   const qualifications = [
     'Ph.D.',
@@ -134,9 +123,9 @@ const FacultyRegister: React.FC = () => {
       setError('Employee ID must be in format 100 followed by 3 digits');
       return false;
     }
-    const anitsEmailRegex = /^[a-zA-Z]+\.[a-zA-Z]+\.(csd|cse|ece|eee|mech|civil|it|chem|bio)@anits\.edu\.in$/i;
+    const anitsEmailRegex = /^[a-zA-Z]+\.(csd|cse|ece|eee|mech|civil|it|chem|bio)@anits\.edu\.in$/i;
     if (!formData.email || !anitsEmailRegex.test(formData.email)) {
-      setError('Please use a valid ANITS email (firstname.lastname.dept@anits.edu.in)');
+      setError('Please use a valid ANITS email (fullnamesurname.dept@anits.edu.in)');
       return false;
     }
     
@@ -328,10 +317,10 @@ const FacultyRegister: React.FC = () => {
                         fullWidth
                         label="Email *"
                         type="email"
-                        placeholder="jane.doe.csd@anits.edu.in"
+                        placeholder="janesmith.cse@anits.edu.in"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
-                        helperText="Format: firstname.lastname.dept@anits.edu.in"
+                        helperText="Format: fullnamesurname.dept@anits.edu.in (e.g., janesmith.cse@anits.edu.in)"
                       />
                     </Box>
                     <Box sx={{ flex: 1 }}>
@@ -370,7 +359,7 @@ const FacultyRegister: React.FC = () => {
                         value={formData.designation}
                         onChange={(e) => handleInputChange('designation', e.target.value)}
                       >
-                        {designations.map((des) => (
+                        {FACULTY_DESIGNATIONS.map((des) => (
                           <MenuItem key={des} value={des}>
                             {des}
                           </MenuItem>

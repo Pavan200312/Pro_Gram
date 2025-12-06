@@ -384,15 +384,6 @@ export const FACULTY_DESIGNATIONS = [
   'Professor',
   'Associate Professor',
   'Assistant Professor',
-  'Senior Lecturer',
-  'Lecturer',
-  'Research Fellow',
-  'Visiting Professor',
-  'Adjunct Professor',
-  'Dean',
-  'Head of Department',
-  'Lab Instructor',
-  'Other',
 ] as const;
 
 export type FacultyDesignation = typeof FACULTY_DESIGNATIONS[number];

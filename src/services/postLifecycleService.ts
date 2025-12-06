@@ -20,7 +20,6 @@ export const checkAndUpdatePostStatus = (postId: string): Post | null => {
   
   const post = posts[postIndex];
   const now = new Date();
-  
   // Skip if already closed or archived
   if (post.status === 'closed' || post.status === 'archived') {
     return post;

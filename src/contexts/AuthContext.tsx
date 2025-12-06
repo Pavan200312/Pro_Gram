@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { User, StudentProfile, FacultyProfile } from '../types';
+import type { User } from '../types';
+import { authService, RegisterStudentData, RegisterFacultyData } from '../services/authApiService';
+import { userService } from '../services/userApiService';
+import { localStorageAuthService } from '../services/localStorageAuthService';
+
+// Check if we should use local storage (when API is not available)
+const USE_LOCAL_STORAGE = true; // Set to false to use API backend
 
 interface AuthContextType {
   user: User | null;
@@ -56,65 +62,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check for stored auth token
-    const token = localStorage.getItem('authToken');
-    const storedUser = localStorage.getItem('user');
+    // Check for stored auth token and fetch fresh user data
+    const checkAuth = async () => {
+      if (USE_LOCAL_STORAGE) {
+        // Use local storage
+        const user = localStorageAuthService.getCurrentUser();
+        if (user) {
+          setUser(user);
+        }
+        setIsLoading(false);
+      } else {
+        // Use API backend
+        const token = localStorage.getItem('accessToken');
+        
+        if (token) {
+          try {
+            // Fetch fresh user data from API
+            const response = await userService.getProfile();
+            setUser(response.data);
+          } catch (err) {
+            console.error('Failed to fetch user data:', err);
+            // Token might be expired, clear it
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+          }
+        }
+        setIsLoading(false);
+      }
+    };
     
-    if (token && storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error('Failed to parse user data');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-      }
-    }
-    setIsLoading(false);
+    checkAuth();
   }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      // Simulate API call to verify token
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (err) {
-      setError('Authentication failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Check if user exists in localStorage (simulating database)
-      const registeredUsersKey = 'registeredUsers';
-      const registeredUsersData = localStorage.getItem(registeredUsersKey);
-      const registeredUsers = registeredUsersData ? JSON.parse(registeredUsersData) : [];
-      
-      // Find user by email
-      const foundUser = registeredUsers.find((u: any) => u.email === email);
-      
-      if (!foundUser) {
-        throw new Error('User not found. Please register first.');
+      if (USE_LOCAL_STORAGE) {
+        // Use local storage
+        const response = await localStorageAuthService.login({ email, password });
+        setUser(response.user);
+      } else {
+        // Use API backend
+        const response = await authService.login({ email, password });
+        setUser(response.data.user);
       }
-      
-      // Check password (in real app, this would be hashed)
-      if (foundUser.password !== password) {
-        throw new Error('Invalid password.');
-      }
-      
-      // Remove password before storing in session
-      const { password: _, ...userWithoutPassword } = foundUser;
-      
-      // Store auth data
-      localStorage.setItem('authToken', 'mock-token-' + Date.now());
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-      
-      setUser(userWithoutPassword);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
       throw err;
@@ -127,65 +120,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
-      // Check if user already exists
-      const registeredUsersKey = 'registeredUsers';
-      const registeredUsersData = localStorage.getItem(registeredUsersKey);
-      const registeredUsers = registeredUsersData ? JSON.parse(registeredUsersData) : [];
-      
-      // Check for duplicate email
-      const existingUser = registeredUsers.find((u: any) => u.email === userData.email);
-      if (existingUser) {
-        throw new Error('Email already registered. Please login instead.');
+      if (USE_LOCAL_STORAGE) {
+        // Use local storage
+        const response = await localStorageAuthService.registerUser(userData);
+        setUser(response.user);
+      } else {
+        // Use API backend
+        let response;
+        
+        if (userData.role === 'student') {
+          // Prepare student data
+          const studentData: RegisterStudentData = {
+            firstName: userData.firstName,
+            middleName: userData.middleName,
+            lastName: userData.lastName,
+            email: userData.email,
+            password: userData.password,
+            contactNo: userData.contactNo,
+            gender: userData.gender,
+            rollNumber: userData.rollNumber!,
+            department: userData.department!,
+            yearOfGraduation: userData.yearOfGraduation!,
+            skills: userData.skills,
+            projects: userData.projects,
+            achievements: userData.achievements?.map(title => ({ title })),
+            experience: userData.experience?.toString(),
+            portfolio: userData.portfolio,
+            bio: '',
+          };
+          
+          response = await authService.registerStudent(studentData);
+        } else {
+          // Prepare faculty data
+          const facultyData: RegisterFacultyData = {
+            firstName: userData.firstName,
+            middleName: userData.middleName,
+            lastName: userData.lastName,
+            email: userData.email,
+            password: userData.password,
+            contactNo: userData.contactNo,
+            gender: userData.gender,
+            employeeId: userData.employeeId!,
+            designation: userData.designation!,
+            dateOfJoining: userData.dateOfJoining || new Date().toISOString(),
+            totalExperience: userData.totalExperience || 0,
+            industryExperience: userData.industryExperience || 0,
+            teachingExperience: userData.teachingExperience || 0,
+            qualification: userData.qualification || '',
+            specialization: userData.specialization ? [userData.specialization] : [],
+            skills: userData.skills,
+            bio: '',
+          };
+          
+          response = await authService.registerFaculty(facultyData);
+        }
+        
+        setUser(response.data.user);
       }
-      
-      // Create new user
-      const newUser: any = {
-        id: Math.random().toString(36).substr(2, 9),
-        firstName: userData.firstName,
-        middleName: userData.middleName,
-        lastName: userData.lastName,
-        email: userData.email,
-        password: userData.password, // In real app, this would be hashed
-        contactNo: userData.contactNo,
-        gender: userData.gender,
-        skills: userData.skills,
-        projects: userData.projects || [],
-        achievements: userData.achievements || [],
-        profilePictureUrl: userData.profilePictureUrl,
-        role: userData.role,
-        ...(userData.role === 'student' ? {
-          rollNumber: userData.rollNumber!,
-          department: userData.department!,
-          yearOfGraduation: userData.yearOfGraduation!,
-          experience: userData.experience || 0,
-          portfolio: userData.portfolio,
-          resumeUrl: userData.resumeUrl
-        } : {
-          employeeId: userData.employeeId!,
-          designation: userData.designation!,
-          dateOfJoining: userData.dateOfJoining!,
-          qualification: userData.qualification!,
-          specialization: userData.specialization!,
-          totalExperience: userData.totalExperience || 0,
-          industryExperience: userData.industryExperience || 0,
-          teachingExperience: userData.teachingExperience || 0,
-          researchProjects: userData.researchProjects || [],
-          cvUrl: userData.cvUrl
-        })
-      };
-      
-      // Save to "database"
-      registeredUsers.push(newUser);
-      localStorage.setItem(registeredUsersKey, JSON.stringify(registeredUsers));
-      
-      // Remove password before storing in session
-      const { password: _, ...userWithoutPassword } = newUser;
-      
-      // Store auth data
-      localStorage.setItem('authToken', 'mock-token-' + Date.now());
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-      
-      setUser(userWithoutPassword);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
       throw err;
@@ -194,24 +185,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    // Clear all authentication data
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    sessionStorage.clear();
-    setUser(null);
-    
-    // Redirect to login page
-    window.location.href = '/login';
+  const logout = async () => {
+    try {
+      if (USE_LOCAL_STORAGE) {
+        localStorageAuthService.logout();
+      } else {
+        await authService.logout();
+      }
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setUser(null);
+      // Redirect to login page
+      window.location.href = '/login';
+    }
   };
 
   const updateProfile = async (updates: Partial<User>) => {
     if (!user) return;
     
     try {
-      const updatedUser = { ...user, ...updates } as User;
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
+      if (USE_LOCAL_STORAGE) {
+        const updatedUser = await localStorageAuthService.updateProfile(user.id, updates);
+        setUser(updatedUser);
+      } else {
+        const response = await userService.updateProfile(updates as any);
+        setUser(response.data);
+      }
     } catch (err) {
       setError('Failed to update profile');
       throw new Error('Profile update failed');
