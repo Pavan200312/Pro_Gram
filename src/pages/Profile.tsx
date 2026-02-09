@@ -402,18 +402,6 @@ const Profile: React.FC = () => {
               {/* Actions */}
               <Stack spacing={1}>
                 <Button
-                  variant="outlined"
-                  startIcon={<Users size={18} />}
-                  onClick={() => navigate('/connections')}
-                  sx={{
-                    borderColor: '#6C47FF',
-                    color: '#6C47FF',
-                    '&:hover': { borderColor: '#5A3AD6', backgroundColor: '#F5F3FF' },
-                  }}
-                >
-                  Connections
-                </Button>
-                <Button
                   variant="contained"
                   startIcon={<Edit size={18} />}
                   onClick={() => navigate('/settings/profile')}

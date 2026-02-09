@@ -32,17 +32,15 @@ import PostManagePage from './pages/PostManagePage';
 import Forums from './pages/Forums';
 import ForumThread from './pages/Forums/ForumThread';
 import CreateThread from './pages/Forums/CreateThread';
-import EventsList from './pages/Events/EventsList';
-import EventDetails from './pages/Events/EventDetails';
-import CalendarView from './pages/Events/CalendarView';
 import AcceptedApplications from './pages/AcceptedApplications';
 import UserProfile from './pages/UserProfile';
 import CandidateRecommendations from './pages/CandidateRecommendations';
 import ProfileSettings from './pages/ProfileSettingsNew';
-import UserDiscovery from './pages/UserDiscovery';
 import Invitations from './pages/Invitations';
 import RecommendedCandidatesPage from './pages/RecommendedCandidatesPage';
 import CandidateProfilePage from './pages/CandidateProfilePage';
+import MyPosts from './pages/MyPosts';
+import SkillMatchedPosts from './pages/SkillMatchedPosts';
 
 function App() {
   // Initialize post lifecycle management and security monitoring
@@ -72,6 +70,8 @@ function App() {
             {/* Protected Routes */}
             <Route element={<PrivateRoute><MainLayout /></PrivateRoute>}>
               <Route path="/home" element={<Home />} />
+              <Route path="/my-posts" element={<MyPosts />} />
+              <Route path="/matched-posts" element={<SkillMatchedPosts />} />
               <Route path="/post/:id" element={<PostDetailPage />} />
               <Route path="/post/:postId/candidates" element={<RecommendedCandidatesPage />} />
               <Route path="/candidate/:candidateId" element={<CandidateProfilePage />} />
@@ -88,9 +88,6 @@ function App() {
               <Route path="/forums" element={<Forums />} />
               <Route path="/forum/:threadId" element={<ForumThread />} />
               <Route path="/forum/create" element={<CreateThread />} />
-              <Route path="/events" element={<EventsList />} />
-              <Route path="/events/calendar" element={<CalendarView />} />
-              <Route path="/event/:eventId" element={<EventDetails />} />
               <Route path="/about" element={<About />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/settings/profile" element={<ProfileSettings />} />
@@ -99,7 +96,6 @@ function App() {
               <Route path="/profile/:id" element={<UserProfile />} />
               <Route path="/candidate/:candidateId" element={<CandidateProfile />} />
               <Route path="/post/:postId/candidates" element={<CandidateRecommendations />} />
-              <Route path="/discover" element={<UserDiscovery />} />
             </Route>
 
             {/* 404 Page */}

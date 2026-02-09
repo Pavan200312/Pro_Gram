@@ -118,7 +118,6 @@ const AuthenticatedNavbar: React.FC = () => {
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Create Post', path: '/create-post' },
     { label: 'Forums', path: '/forums' },
-    { label: 'Events', path: '/events' },
     { label: 'Applications', path: '/applications' },
     { label: 'Invitations', path: '/invitations' },
     { label: 'Chat Room', path: '/chatrooms' },

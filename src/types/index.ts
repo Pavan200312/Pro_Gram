@@ -232,41 +232,6 @@ export interface ConnectionRequest {
   updatedAt?: string;
 }
 
-// Connection Types
-export interface Connection {
-  id: string;
-  userId: string; // The current user's ID
-  connectedUserId: string;
-  connectedUser: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    role: 'student' | 'faculty';
-    avatar?: string;
-    department?: string;
-    designation?: string;
-    skills: string[];
-    email?: string;
-  };
-  connectedAt: string;
-  mutualConnectionsCount?: number;
-}
-
-// Extended User for search and discovery
-export interface UserSearchResult {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'student' | 'faculty';
-  avatar?: string;
-  department?: string;
-  designation?: string;
-  skills: string[];
-  connectionStatus: 'not_connected' | 'connected' | 'pending_sent' | 'pending_received';
-  mutualConnectionsCount?: number;
-}
-
 // Chatroom Types (EXTENDED for project-scoped chats)
 export interface Chatroom {
   id: string;

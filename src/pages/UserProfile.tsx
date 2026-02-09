@@ -249,18 +249,6 @@ const UserProfile: React.FC = () => {
 
                 {!isOwnProfile && <Divider sx={{ my: 2 }} />}
 
-                {/* Mutual Connections */}
-                {!isOwnProfile && mutualConnectionsCount > 0 && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                      Mutual Connections
-                    </Typography>
-                    <Typography variant="h6" fontWeight={700}>
-                      {mutualConnectionsCount}
-                    </Typography>
-                  </Box>
-                )}
-
                 <Stack spacing={2}>
                   <Box>
                     <Typography variant="body2" color="text.secondary">
