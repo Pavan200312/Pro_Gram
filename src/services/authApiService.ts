@@ -86,7 +86,7 @@ export const authService = {
   async registerStudent(data: RegisterStudentData): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>(
       API_ENDPOINTS.auth.registerStudent,
-      data
+      { ...data, role: 'STUDENT' }
     );
     
     if (response.data?.accessToken) {
@@ -104,7 +104,7 @@ export const authService = {
   async registerFaculty(data: RegisterFacultyData): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>(
       API_ENDPOINTS.auth.registerFaculty,
-      data
+      { ...data, role: 'FACULTY' }
     );
     
     if (response.data?.accessToken) {

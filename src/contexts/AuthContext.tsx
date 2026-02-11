@@ -5,7 +5,7 @@ import { userService } from '../services/userApiService';
 import { localStorageAuthService } from '../services/localStorageAuthService';
 
 // Check if we should use local storage (when API is not available)
-const USE_LOCAL_STORAGE = true; // Set to false to use API backend
+const USE_LOCAL_STORAGE = false; // Set to false to use API backend
 
 interface AuthContextType {
   user: User | null;
