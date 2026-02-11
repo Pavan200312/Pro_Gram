@@ -13,9 +13,10 @@ import {
   IconButton,
   Avatar,
   Alert,
+  InputAdornment,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft, Upload, X, Eye, EyeOff } from 'lucide-react';
 import { ThemeProvider } from '@mui/material/styles';
 import { useAuth } from '../contexts/AuthContext';
 import { AVAILABLE_SKILLS, FACULTY_DESIGNATIONS } from '../types';
@@ -52,6 +53,7 @@ const FacultyRegister: React.FC = () => {
   const [profilePicture, setProfilePicture] = useState<string>('');
   const [resume, setResume] = useState<File | null>(null);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const qualifications = [
     'Ph.D.',
@@ -327,10 +329,23 @@ const FacultyRegister: React.FC = () => {
                       <TextField
                         fullWidth
                         label="Password *"
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         value={formData.password}
                         onChange={(e) => handleInputChange('password', e.target.value)}
                         helperText="Minimum 8 characters"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setShowPassword(!showPassword)}
+                                edge="end"
+                                aria-label="toggle password visibility"
+                              >
+                                {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
                       />
                     </Box>
                   </Stack>

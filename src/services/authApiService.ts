@@ -70,13 +70,10 @@ export interface RegisterFacultyData {
 }
 
 export interface AuthResponse {
-  success: boolean;
   message: string;
-  data: {
-    user: any;
-    accessToken: string;
-    refreshToken: string;
-  };
+  user: any;
+  access_token: string;
+  supabase_access_token?: string;
 }
 
 export const authService = {
@@ -86,13 +83,16 @@ export const authService = {
   async registerStudent(data: RegisterStudentData): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>(
       API_ENDPOINTS.auth.registerStudent,
-      { ...data, role: 'STUDENT' }
+      { ...data, role: 'student' }
     );
     
-    if (response.data?.accessToken) {
-      setAuthToken(response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    if (!response.user) {
+      throw new Error('Invalid auth response');
+    }
+    
+    if (response.access_token) {
+      setAuthToken(response.supabase_access_token || response.access_token);
+      localStorage.setItem('user', JSON.stringify(response.user));
     }
     
     return response;
@@ -104,13 +104,16 @@ export const authService = {
   async registerFaculty(data: RegisterFacultyData): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>(
       API_ENDPOINTS.auth.registerFaculty,
-      { ...data, role: 'FACULTY' }
+      { ...data, role: 'faculty' }
     );
     
-    if (response.data?.accessToken) {
-      setAuthToken(response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    if (!response.user) {
+      throw new Error('Invalid auth response');
+    }
+    
+    if (response.access_token) {
+      setAuthToken(response.supabase_access_token || response.access_token);
+      localStorage.setItem('user', JSON.stringify(response.user));
     }
     
     return response;
@@ -125,10 +128,13 @@ export const authService = {
       credentials
     );
     
-    if (response.data?.accessToken) {
-      setAuthToken(response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    if (!response.user) {
+      throw new Error('Invalid auth response');
+    }
+    
+    if (response.access_token) {
+      setAuthToken(response.supabase_access_token || response.access_token);
+      localStorage.setItem('user', JSON.stringify(response.user));
     }
     
     return response;

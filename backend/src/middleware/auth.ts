@@ -35,10 +35,12 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
       .eq('id', data.user.id)
       .single();
 
+    const role = (profile?.role || (data.user.user_metadata as any)?.role || 'student') as string;
+
     req.user = {
       id: data.user.id,
       email: data.user.email || '',
-      role: (profile?.role || (data.user.user_metadata as any)?.role || 'STUDENT') as any,
+      role: role.toLowerCase(),
     };
 
     next();
@@ -63,10 +65,12 @@ export async function optionalAuthMiddleware(req: AuthRequest, _res: Response, n
           .eq('id', data.user.id)
           .single();
 
+        const role = (profile?.role || (data.user.user_metadata as any)?.role || 'student') as string;
+
         req.user = {
           id: data.user.id,
           email: data.user.email || '',
-          role: (profile?.role || (data.user.user_metadata as any)?.role || 'STUDENT') as any,
+          role: role.toLowerCase(),
         };
       }
     }
@@ -89,7 +93,10 @@ export function roleMiddleware(...roles: string[]) {
       });
     }
 
-    if (!roles.includes(req.user.role)) {
+    const reqRole = req.user.role?.toLowerCase();
+    const allowed = roles.map(r => r.toLowerCase());
+
+    if (!allowed.includes(reqRole)) {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: Insufficient permissions',
