@@ -12,8 +12,8 @@ export const API_URL = `${API_BASE_URL}/api/${API_VERSION}`;
 export const API_ENDPOINTS = {
   // Authentication
   auth: {
-    registerStudent: `${API_URL}/auth/register/student`,
-    registerFaculty: `${API_URL}/auth/register/faculty`,
+    registerStudent: `${API_URL}/auth/register`,
+    registerFaculty: `${API_URL}/auth/register`,
     login: `${API_URL}/auth/login`,
     logout: `${API_URL}/auth/logout`,
     refreshToken: `${API_URL}/auth/refresh`,

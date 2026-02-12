@@ -5,7 +5,7 @@ import { userService } from '../services/userApiService';
 import { localStorageAuthService } from '../services/localStorageAuthService';
 
 // Check if we should use local storage (when API is not available)
-const USE_LOCAL_STORAGE = true; // Set to false to use API backend
+const USE_LOCAL_STORAGE = false; // Set to false to use API backend
 
 interface AuthContextType {
   user: User | null;
@@ -106,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         // Use API backend
         const response = await authService.login({ email, password });
-        setUser(response.data.user);
+        setUser(response.user);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
@@ -175,7 +175,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           response = await authService.registerFaculty(facultyData);
         }
         
-        setUser(response.data.user);
+        setUser(response.user);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');

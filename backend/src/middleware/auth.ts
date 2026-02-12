@@ -1,56 +1,82 @@
 import { Response, NextFunction } from 'express';
+import { supabase } from '../lib/supabase.js';
 import { AuthRequest } from '../types/index.js';
-import { extractTokenFromHeader, verifyToken } from '../utils/jwt.js';
 
 /**
- * Middleware to authenticate JWT tokens
+ * Extracts bearer token from Authorization header
  */
-export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+function extractBearerToken(authHeader?: string): string | null {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  return authHeader.substring(7);
+}
+
+/**
+ * Middleware to authenticate Supabase JWT tokens
+ * Fetches user via Supabase Admin API and enriches with profile role
+ */
+export async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const token = extractTokenFromHeader(req.headers.authorization);
+    const token = extractBearerToken(req.headers.authorization);
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'No authorization token provided',
-      });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const user = verifyToken(token);
+    const { data, error } = await supabase.auth.getUser(token);
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid or expired token',
-      });
+    if (error || !data?.user) {
+      return res.status(401).json({ error: 'Invalid token' });
     }
 
-    req.user = user;
+    // Fetch role from profiles table; fall back to user metadata or default
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .single();
+
+    const role = (profile?.role || (data.user.user_metadata as any)?.role || 'student') as string;
+
+    req.user = {
+      id: data.user.id,
+      email: data.user.email || '',
+      role: role.toLowerCase(),
+    };
+
     next();
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Authentication error',
-    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Authentication error' });
   }
 }
 
 /**
  * Optional authentication middleware - doesn't fail if no token
  */
-export function optionalAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+export async function optionalAuthMiddleware(req: AuthRequest, _res: Response, next: NextFunction) {
   try {
-    const token = extractTokenFromHeader(req.headers.authorization);
+    const token = extractBearerToken(req.headers.authorization);
 
     if (token) {
-      const user = verifyToken(token);
-      if (user) {
-        req.user = user;
+      const { data } = await supabase.auth.getUser(token);
+      if (data?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        const role = (profile?.role || (data.user.user_metadata as any)?.role || 'student') as string;
+
+        req.user = {
+          id: data.user.id,
+          email: data.user.email || '',
+          role: role.toLowerCase(),
+        };
       }
     }
 
     next();
-  } catch (error) {
+  } catch (_err) {
     next();
   }
 }
@@ -67,7 +93,10 @@ export function roleMiddleware(...roles: string[]) {
       });
     }
 
-    if (!roles.includes(req.user.role)) {
+    const reqRole = req.user.role?.toLowerCase();
+    const allowed = roles.map(r => r.toLowerCase());
+
+    if (!allowed.includes(reqRole)) {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: Insufficient permissions',

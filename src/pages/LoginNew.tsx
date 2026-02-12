@@ -9,20 +9,23 @@ import {
   Paper,
   Alert,
   Divider,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { GraduationCap, Mail, Lock } from 'lucide-react';
+import { GraduationCap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { ThemeProvider } from '@mui/material/styles';
 import { useAuth } from '../contexts/AuthContext';
 import unitedTheme from '../theme/unitedTheme';
 
 const LoginNew: React.FC = () => {
-  const { login, error: authError } = useAuth();
+  const { login, error: authError, user } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +34,21 @@ const LoginNew: React.FC = () => {
 
     try {
       await login(email, password);
-      // Navigate based on successful login
-      navigate('/home');
+      // Role-based routing after successful login
+      // Note: user will be set after login completes
+      setTimeout(() => {
+        const userRole = localStorage.getItem('user');
+        if (userRole) {
+          const parsedUser = JSON.parse(userRole);
+          if (parsedUser.role === 'faculty') {
+            navigate('/dashboard'); // Faculty dashboard
+          } else {
+            navigate('/home'); // Student home
+          }
+        } else {
+          navigate('/home');
+        }
+      }, 100);
     } catch (err) {
       setError(authError || 'Login failed. Please check your credentials.');
     } finally {
@@ -149,7 +165,7 @@ const LoginNew: React.FC = () => {
                   <TextField
                     fullWidth
                     label="Password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
@@ -157,6 +173,17 @@ const LoginNew: React.FC = () => {
                     InputProps={{
                       startAdornment: (
                         <Lock size={20} color="#6B7280" style={{ marginRight: 8 }} />
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                            aria-label="toggle password visibility"
+                          >
+                            {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                          </IconButton>
+                        </InputAdornment>
                       ),
                     }}
                   />
